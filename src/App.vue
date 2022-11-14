@@ -6,6 +6,7 @@
           type="text"
           v-model="todo"
           :maxlength="maxInput"
+          @keypress.enter="addTodo(id++)"
           placeholder="Введите вашу задачу..." />
 
       <button class="btn" @click="addTodo(id++)" >Добавить</button>
@@ -13,8 +14,9 @@
     </div>
     <ul class="list" v-for="(todo, i) in todos" :key="todo.id">
 
-      <li :class="{ done: todo.isCompleted }" @dblclick="removeTodo(i)"> <span>{{ i + 1 }}. {{ todo.text }}</span>
-        <input v-model="todo.isCompleted" type="checkbox">
+      <li :class="{ done: todo.isCompleted }" @dblclick="removeTodo(i)">
+        <span title="Двойной клик для удаления" >{{ i + 1 }}. {{ todo.text }}</span>
+        <input v-model="todo.isCompleted" @change="checkLS()" type="checkbox">
 
       </li>
     </ul>
@@ -27,6 +29,14 @@
 export default {
   name: 'App',
   components: {},
+
+  async mounted(){
+    const data = await localStorage.getItem('todos')
+    if (data){
+      this.todos = JSON.parse(data)
+    }
+  },
+
 
   data(){
     return {
@@ -41,15 +51,23 @@ export default {
   },
   methods: {
     addTodo() {
-      this.todos.push ({
-        id: this.id,
-        text: this.todo,
-        isCompleted: this.isDone
-      });
+      if (this.todo !== ""){
+        this.todos.push ({
+          id: this.id,
+          text: this.todo,
+          isCompleted: this.isDone
+        })
+      }
+      localStorage.setItem('todos', JSON.stringify(this.todos))
       this.todo = '';
     },
     removeTodo(index){
       this.todos.splice(index , 1)
+      localStorage.setItem('todos', JSON.stringify(this.todos))
+    },
+    checkLS(){
+      console.log(this.isDone)
+      localStorage.setItem('todos', JSON.stringify(this.todos))
     }
   }
 }
